@@ -1,8 +1,10 @@
-import pytest
-import tempfile
 import os
+import tempfile
+from unittest.mock import MagicMock, patch
+
+import pytest
+
 from ats_system import ATSScorer
-from unittest.mock import patch, MagicMock
 
 
 class TestATSScorer:

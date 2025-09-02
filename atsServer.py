@@ -1,10 +1,12 @@
-from fastapi import FastAPI, File, UploadFile, HTTPException
-from fastapi.responses import JSONResponse
-from fastapi.middleware.cors import CORSMiddleware
-import tempfile
 import os
+import tempfile
 from typing import Dict
+
 import uvicorn
+from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+
 from ats_system import ATSScorer
 
 app = FastAPI(

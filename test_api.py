@@ -3,9 +3,10 @@
 Simple test script to verify the ATS API is working
 """
 
-import requests
 import sys
 from pathlib import Path
+
+import requests
 
 
 def test_health_check():

@@ -788,11 +788,12 @@
 # numpy==1.24.3
 # """
 
-import pypdf
+import json
 import re
 from collections import defaultdict
-import json
 from typing import Dict, List, Tuple
+
+import pypdf
 
 
 class ATSScorer:
