@@ -31,7 +31,6 @@ RUN pip install --no-cache-dir --upgrade pip \
 # Copy application code
 COPY ats_system.py .
 COPY atsServer.py .
-COPY app.py .
 
 # Create directory for uploads (if needed)
 RUN mkdir -p /app/uploads /app/temp
