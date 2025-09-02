@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ATS Resume Analyzer</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .header { text-align: center; margin-bottom: 40px; }
+        .section { margin-bottom: 30px; }
+        .code { background-color: #f4f4f4; padding: 10px; border-radius: 5px; }
+        .endpoint { background-color: #e8f5e8; padding: 15px; border-radius: 5px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎯 ATS Resume Analyzer</h1>
+        <p>AI-powered ATS compatibility analysis for resumes and job descriptions</p>
+    </div>
+    
+    <div class="section">
+        <h2>📋 Overview</h2>
+        <p>The ATS Resume Analyzer is a FastAPI-based service that helps job seekers optimize their resumes for Applicant Tracking Systems (ATS). Upload your resume and job description PDFs to get detailed compatibility analysis.</p>
+    </div>
+    
+    <div class="section">
+        <h2>🚀 API Endpoints</h2>
+        
+        <div class="endpoint">
+            <h3>GET /health</h3>
+            <p>Health check endpoint to verify the service is running.</p>
+        </div>
+        
+        <div class="endpoint">
+            <h3>POST /analyze</h3>
+            <p>Upload resume and job description PDFs for ATS compatibility analysis.</p>
+            <p><strong>Parameters:</strong></p>
+            <ul>
+                <li><code>resume_file</code> - PDF file of the resume</li>
+                <li><code>jd_file</code> - PDF file of the job description</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="section">
+        <h2>🛠️ Features</h2>
+        <ul>
+            <li>PDF text extraction from resumes and job descriptions</li>
+            <li>Skills matching with semantic analysis</li>
+            <li>Contact information validation</li>
+            <li>Keyword coverage analysis</li>
+            <li>Detailed scoring and recommendations</li>
+        </ul>
+    </div>
+    
+    <div class="section">
+        <h2>📊 Response Format</h2>
+        <p>The API returns a comprehensive JSON analysis including:</p>
+        <ul>
+            <li>Overall ATS score (0-100)</li>
+            <li>Component breakdowns (skills, formatting, keywords)</li>
+            <li>Matched and missing skills</li>
+            <li>Improvement recommendations</li>
+        </ul>
+    </div>
+    
+    <div class="section">
+        <h2>🔗 Repository</h2>
+        <p>Source code: <a href="https://github.com/GriffinBlackbirdd/ATS" target="_blank">https://github.com/GriffinBlackbirdd/ATS</a></p>
+    </div>
+    
+    <div class="section">
+        <p style="text-align: center; color: #666; font-size: 14px;">
+            Generated automatically by CI/CD pipeline
+        </p>
+    </div>
+</body>
+</html>
