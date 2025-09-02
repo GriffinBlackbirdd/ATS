@@ -27,7 +27,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
         
     - name: Cache pip dependencies
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ~/.cache/pip
         key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
@@ -86,7 +86,7 @@ jobs:
         pytest test_ats_server.py -v --cov=atsServer --cov-append --cov-report=xml --cov-report=html
         
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v4
       with:
         file: ./coverage.xml
         flags: unittests
@@ -156,7 +156,7 @@ jobs:
         safety check --json || true
         
     - name: Upload security scan results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: security-reports
@@ -204,7 +204,7 @@ jobs:
       uses: actions/checkout@v4
       
     - name: Deploy to GitHub Pages (Documentation)
-      uses: peaceiris/actions-gh-pages@v3
+      uses: peaceiris/actions-gh-pages@v4
       if: success()
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
