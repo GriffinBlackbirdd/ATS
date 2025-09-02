@@ -843,7 +843,11 @@ class ATSScorer:
         """Helper method to extract context around a regex match."""
         start_pos = max(0, match.start() - 30)
         end_pos = min(len(text), match.end() + 30)
-        return text[start_pos:end_pos].replace('\n', ' ')
+        context = text[start_pos:end_pos].replace('\n', ' ')
+        # Ensure context doesn't exceed 60 characters
+        if len(context) > 60:
+            context = context[:60]
+        return context
 
     def _extract_section(self, text: str, keywords: List[str]) -> str:
         """Extract specific sections from text based on keywords."""
@@ -854,17 +858,25 @@ class ATSScorer:
         for line in text_lines:
             line_lower = line.lower().strip()
 
+            # Check if this line starts a target section
             if any(keyword in line_lower for keyword in keywords):
                 capturing = True
                 section_text += line + "\n"
                 continue
 
-            if capturing and any(stop_word in line_lower for stop_word in
-                               ['education', 'experience', 'contact', 'about', 'summary']):
-                if not any(keyword in line_lower for keyword in keywords):
-                    break
-
             if capturing:
+                # Stop capturing if we hit a new major section header (but not content lines)
+                # A section header is typically a line that ends with ":" and contains section keywords
+                is_section_header = (
+                    line.strip().endswith(':') and 
+                    any(stop_word in line_lower for stop_word in 
+                        ['education', 'experience', 'contact', 'about', 'summary', 'preferred', 'responsibilities', 'skills', 'qualifications'])
+                )
+                
+                if is_section_header and not any(keyword in line_lower for keyword in keywords):
+                    break
+                
+                # Continue capturing content
                 section_text += line + "\n"
 
         return section_text.strip()
