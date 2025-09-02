@@ -1,25 +1,25 @@
-fastapi==0.104.1
-uvicorn[standard]==0.24.0
-python-multipart==0.0.6
-pypdf==3.0.1
-pandas==2.0.3
-numpy==1.24.3
+fastapi
+uvicorn[standard]
+python-multipart
+pypdf
+pandas
+numpy
 
 # Testing dependencies
-pytest==7.4.3
-pytest-cov==4.1.0
-pytest-mock==3.12.0
-pytest-asyncio==0.21.1
-httpx==0.25.2
+pytest
+pytest-cov
+pytest-mock
+pytest-asyncio
+httpx
 
 # Development dependencies
-black==23.11.0
-isort==5.12.0
-flake8==6.1.0
-mypy==1.7.1
-bandit==1.7.5
-safety==2.3.4
+black
+isort
+flake8
+mypy
+bandit
+safety
 
 # Optional: For production monitoring
-prometheus-client==0.19.0
-structlog==23.2.0
+prometheus-client
+structlog
