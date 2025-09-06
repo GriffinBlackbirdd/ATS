@@ -1,0 +1,20 @@
+{
+  "missing_skills": [
+    "keras",
+    "pytorch"
+  ],
+  "missing_phrases": [
+    "scalability"
+  ],
+  "matched_skills": [
+    "nlp",
+    "python",
+    "gcp",
+    "aws",
+    "tensorflow",
+    "azure"
+  ],
+  "matched_phrases": [
+    "infrastructure"
+  ]
+}
