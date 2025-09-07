@@ -1,219 +1,147 @@
-import os
-import tempfile
-from typing import Dict
-
-import uvicorn
-from fastapi import FastAPI, File, HTTPException, UploadFile
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.responses import JSONResponse
-
-from ats_system import ATSScorer
+import tempfile
+import os
+from typing import Dict, Any
+import json
+from ats_system import CleanATSScorer
 
 app = FastAPI(
-    title="ATS Resume Analyzer API",
-    description="Upload resume and job description PDFs to get ATS compatibility analysis",
-    version="1.0.0",
+    title="ATS Scorer API",
+    description="API for analyzing resumes against job descriptions using ATS scoring",
+    version="1.0.0"
 )
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# Initialize the ATS scorer
+ats_scorer = CleanATSScorer()
 
-# Initialize ATS scorer
-ats_scorer = ATSScorer()
+@app.post("/analyze")
+async def analyze_resume(
+    resume: UploadFile = File(..., description="Resume PDF file"),
+    jd: UploadFile = File(..., description="Job Description PDF file")
+) -> Dict[str, float]:
+    """
+    Analyze a resume against a job description and return the ATS score.
 
+    Args:
+        resume: PDF file of the resume
+        jd: PDF file of the job description
+
+    Returns:
+        Dictionary containing the ATS score
+    """
+
+    # Validate file types
+    if not resume.filename.lower().endswith('.pdf'):
+        raise HTTPException(status_code=400, detail="Resume must be a PDF file")
+
+    if not jd.filename.lower().endswith('.pdf'):
+        raise HTTPException(status_code=400, detail="Job description must be a PDF file")
+
+    try:
+        # Create temporary files to save uploaded PDFs
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as resume_temp:
+            resume_content = await resume.read()
+            resume_temp.write(resume_content)
+            resume_temp_path = resume_temp.name
+
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as jd_temp:
+            jd_content = await jd.read()
+            jd_temp.write(jd_content)
+            jd_temp_path = jd_temp.name
+
+        # Generate ATS report
+        report = ats_scorer.generate_ats_report(resume_temp_path, jd_temp_path)
+
+        # Clean up temporary files
+        os.unlink(resume_temp_path)
+        os.unlink(jd_temp_path)
+
+        # Return only the ATS score as requested
+        return {"ats_score": report["ats_score"]}
+
+    except Exception as e:
+        # Clean up temporary files in case of error
+        if 'resume_temp_path' in locals() and os.path.exists(resume_temp_path):
+            os.unlink(resume_temp_path)
+        if 'jd_temp_path' in locals() and os.path.exists(jd_temp_path):
+            os.unlink(jd_temp_path)
+
+        raise HTTPException(status_code=500, detail=f"Error processing files: {str(e)}")
+
+@app.post("/keywords")
+async def extract_keywords(
+    jd: UploadFile = File(..., description="Job Description PDF file")
+) -> Dict[str, Any]:
+    """
+    Extract keywords from a job description.
+
+    Args:
+        jd: PDF file of the job description
+
+    Returns:
+        Dictionary containing extracted keywords (tech_skills, soft_skills, all_skills, total_count)
+    """
+
+    # Validate file type
+    if not jd.filename.lower().endswith('.pdf'):
+        raise HTTPException(status_code=400, detail="Job description must be a PDF file")
+
+    try:
+        # Create temporary file to save uploaded PDF
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as jd_temp:
+            jd_content = await jd.read()
+            jd_temp.write(jd_content)
+            jd_temp_path = jd_temp.name
+
+        # Extract text from JD PDF
+        jd_text = ats_scorer.extract_text_from_pdf(jd_temp_path)
+
+        # Extract skills from JD
+        jd_skills = ats_scorer.extract_jd_skills(jd_text)
+
+        # Clean up temporary file
+        os.unlink(jd_temp_path)
+
+        # Format response similar to jd_keywords.json
+        jd_keywords = {
+            "tech_skills": sorted(jd_skills['tech_skills']),
+            "soft_skills": sorted(jd_skills['soft_skills']),
+            "all_skills": sorted(jd_skills['all_skills']),
+            "total_count": len(jd_skills['all_skills'])
+        }
+
+        return jd_keywords
+
+    except Exception as e:
+        # Clean up temporary file in case of error
+        if 'jd_temp_path' in locals() and os.path.exists(jd_temp_path):
+            os.unlink(jd_temp_path)
+
+        raise HTTPException(status_code=500, detail=f"Error processing file: {str(e)}")
 
 @app.get("/")
 async def root():
-    """Root endpoint with API information"""
+    """
+    Root endpoint with API information.
+    """
     return {
-        "message": "ATS Resume Analyzer API",
+        "message": "ATS Scorer API",
         "version": "1.0.0",
         "endpoints": {
-            "/analyze": "POST - Upload resume and JD PDFs for analysis",
-            "/health": "GET - Health check endpoint",
-            "/docs": "GET - Interactive API documentation",
-        },
+            "/analyze": "POST - Analyze resume against job description (requires resume.pdf and jd.pdf)",
+            "/keywords": "POST - Extract keywords from job description (requires jd.pdf)",
+            "/docs": "GET - Interactive API documentation"
+        }
     }
-
 
 @app.get("/health")
 async def health_check():
-    """Health check endpoint"""
-    return {"status": "healthy", "message": "ATS API is running"}
-
-
-@app.post("/analyze")
-async def analyze_resume_and_jd(
-    resume: UploadFile = File(..., description="Resume PDF file"),
-    job_description: UploadFile = File(..., description="Job Description PDF file"),
-):
     """
-    Analyze resume against job description for ATS compatibility
-
-    Args:
-        resume: PDF file containing the resume
-        job_description: PDF file containing the job description
-
-    Returns:
-        JSON response with ATS analysis results
+    Health check endpoint.
     """
-
-    # Validate file types
-    if not resume.filename.lower().endswith(".pdf"):
-        raise HTTPException(status_code=400, detail="Resume file must be a PDF")
-
-    if not job_description.filename.lower().endswith(".pdf"):
-        raise HTTPException(
-            status_code=400, detail="Job description file must be a PDF"
-        )
-
-    # Create temporary files
-    resume_temp_path = None
-    jd_temp_path = None
-
-    try:
-        # Save uploaded files to temporary locations
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as resume_temp:
-            resume_content = await resume.read()
-            resume_temp.write(resume_content)
-            resume_temp_path = resume_temp.name
-
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as jd_temp:
-            jd_content = await job_description.read()
-            jd_temp.write(jd_content)
-            jd_temp_path = jd_temp.name
-
-        # Generate ATS analysis report
-        report = ats_scorer.generate_report(resume_temp_path, jd_temp_path)
-
-        # Add metadata
-        response_data = {
-            "status": "success",
-            "analysis_timestamp": "2024-12-20T12:00:00Z",  # You might want to add actual timestamp
-            "files_analyzed": {
-                "resume_filename": resume.filename,
-                "job_description_filename": job_description.filename,
-            },
-            "results": report,
-        }
-
-        return JSONResponse(content=response_data)
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
-
-    finally:
-        # Clean up temporary files
-        if resume_temp_path and os.path.exists(resume_temp_path):
-            os.unlink(resume_temp_path)
-        if jd_temp_path and os.path.exists(jd_temp_path):
-            os.unlink(jd_temp_path)
-
-
-@app.post("/analyze-quick")
-async def analyze_quick(
-    resume: UploadFile = File(..., description="Resume PDF file"),
-    job_description: UploadFile = File(..., description="Job Description PDF file"),
-):
-    """
-    Quick analysis returning only essential metrics
-
-    Args:
-        resume: PDF file containing the resume
-        job_description: PDF file containing the job description
-
-    Returns:
-        JSON response with essential ATS metrics only
-    """
-
-    # Validate file types
-    if not resume.filename.lower().endswith(".pdf"):
-        raise HTTPException(status_code=400, detail="Resume file must be a PDF")
-
-    if not job_description.filename.lower().endswith(".pdf"):
-        raise HTTPException(
-            status_code=400, detail="Job description file must be a PDF"
-        )
-
-    resume_temp_path = None
-    jd_temp_path = None
-
-    try:
-        # Save uploaded files to temporary locations
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as resume_temp:
-            resume_content = await resume.read()
-            resume_temp.write(resume_content)
-            resume_temp_path = resume_temp.name
-
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as jd_temp:
-            jd_content = await job_description.read()
-            jd_temp.write(jd_content)
-            jd_temp_path = jd_temp.name
-
-        # Generate full report
-        full_report = ats_scorer.generate_report(resume_temp_path, jd_temp_path)
-
-        # Extract only essential metrics
-        quick_response = {
-            "status": "success",
-            "files_analyzed": {
-                "resume_filename": resume.filename,
-                "job_description_filename": job_description.filename,
-            },
-            "quick_results": {
-                "ats_score": full_report["ats_score"],
-                "component_percentages": full_report["component_scores"],
-                "matched_skills_count": len(
-                    full_report["detailed_analysis"]["strong_matches"]
-                ),
-                "missing_required_skills_count": len(
-                    full_report["detailed_analysis"]["missing_required"]
-                ),
-                "missing_preferred_skills_count": len(
-                    full_report["detailed_analysis"]["missing_preferred"]
-                ),
-                "top_recommendations": full_report["detailed_analysis"][
-                    "recommendations"
-                ][:3],
-            },
-        }
-
-        return JSONResponse(content=quick_response)
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Quick analysis failed: {str(e)}")
-
-    finally:
-        # Clean up temporary files
-        if resume_temp_path and os.path.exists(resume_temp_path):
-            os.unlink(resume_temp_path)
-        if jd_temp_path and os.path.exists(jd_temp_path):
-            os.unlink(jd_temp_path)
-
-
-@app.get("/skills-database")
-async def get_skills_database():
-    """
-    Get the complete skills database used for analysis
-
-    Returns:
-        JSON response with all skill categories and skills
-    """
-    return {
-        "status": "success",
-        "skills_database": ats_scorer.tech_skills,
-        "total_skills": sum(len(skills) for skills in ats_scorer.tech_skills.values()),
-        "categories": list(ats_scorer.tech_skills.keys()),
-    }
-
+    return {"status": "healthy", "service": "ATS Scorer API"}
 
 if __name__ == "__main__":
-    print("Starting ATS Resume Analyzer API Server...")
-    print("API Documentation available at: http://localhost:8000/docs")
-    print("Alternative docs at: http://localhost:8000/redoc")
-    uvicorn.run(app, host="0.0.0.0", port=8001)
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8008)
