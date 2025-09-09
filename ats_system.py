@@ -1,9 +1,15 @@
+'''
+Code written by Arreyan Hamid
+ATS System along with Server
+Code documented by Claude for readability
+'''
+
+
 import pypdf
 import re
 from collections import defaultdict
 import json
 from typing import Dict, List, Tuple
-
 class CleanATSScorer:
     def __init__(self):
         """Initialize ATS Scorer with specified weights."""
@@ -113,7 +119,7 @@ class CleanATSScorer:
             ]
         }
 
-        # Soft skills database
+        # Soft skills
         self.soft_skills = [
             'communication', 'teamwork', 'leadership', 'problem solving', 'analytical',
             'critical thinking', 'creativity', 'adaptability', 'time management', 'collaboration',
@@ -544,6 +550,8 @@ def main():
     try:
         # Generate report from PDF files
         report = ats_scorer.generate_ats_report('/Users/arreyanhamid/Developer/ai-resume/rendercv_output/Garv_Khurana_CV.pdf', 'jd.pdf')
+        # report = ats_scorer.generate_ats_report('/Volumes/Crucible/ATS/ATS/Garv.pdf', 'jd.pdf')
+
 
         # Display results
         print("=" * 60)
@@ -559,13 +567,13 @@ def main():
             component_name = component.replace('_', ' ').title()
             print(f"   • {component_name:<25}: {score}")
 
-        print(f"\n🔍 JD SKILLS ANALYSIS:")
+        print(f"\n  JD SKILLS ANALYSIS:")
         print(f"   • Tech Skills ({len(report['jd_skills']['tech_skills'])}): {', '.join(report['jd_skills']['tech_skills'][:10])}")
         if len(report['jd_skills']['tech_skills']) > 10:
             print(f"     ... and {len(report['jd_skills']['tech_skills']) - 10} more")
         print(f"   • Soft Skills ({len(report['jd_skills']['soft_skills'])}): {', '.join(report['jd_skills']['soft_skills'])}")
 
-        print(f"\n✅ SKILL MATCHING:")
+        print(f"\n  SKILL MATCHING:")
         print(f"   • Total JD Skills: {report['skill_matching']['total_jd_skills']}")
         print(f"   • Skills Matched: {len(report['skill_matching']['matched_skills'])}")
         print(f"   • Match Percentage: {report['skill_matching']['match_percentage']}%")
@@ -578,20 +586,20 @@ def main():
             if len(report['skill_matching']['missing_skills']) > 15:
                 print(f"     ... and {len(report['skill_matching']['missing_skills']) - 15} more")
 
-        print(f"\n📝 FORMATTING CHECK:")
+        print(f"\n  FORMATTING CHECK:")
         print(f"   • Email Present: {'✅' if report['formatting_check']['email_present'] else '❌'}")
         print(f"   • Phone Present: {'✅' if report['formatting_check']['phone_present'] else '❌'}")
         print(f"   • Essential Sections: {report['formatting_check']['essential_sections_found']}/3")
         if report['formatting_check']['issues']:
             print(f"   • Issues: {', '.join(report['formatting_check']['issues'])}")
 
-        print(f"\n🏆 EXTRA SECTIONS:")
+        print(f"\n  EXTRA SECTIONS:")
         if report['extra_sections']['sections_found']:
             print(f"   • Found ({report['extra_sections']['count']}): {', '.join(report['extra_sections']['sections_found'])}")
         else:
             print(f"   • None found")
 
-        print(f"\n💼 EXPERIENCE METRICS:")
+        print(f"\n  EXPERIENCE METRICS:")
         print(f"   • Action Verbs: {report['experience_metrics']['action_verbs_count']}")
         print(f"   • Quantified Achievements: {report['experience_metrics']['quantified_achievements']}")
 
@@ -612,7 +620,7 @@ def main():
 
         with open('jd_keywords.json', 'w') as f:
             json.dump(jd_keywords, f, indent=2)
-        print("🔑 JD keywords saved to 'jd_keywords.json'")
+        print("  JD keywords saved to 'jd_keywords.json'")
 
     except Exception as e:
         print(f"❌ Error: {e}")

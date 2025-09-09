@@ -1,3 +1,10 @@
+'''
+Code written by Arreyan Hamid
+ATS Server
+Code documented by Claude for readability
+'''
+
+
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.responses import JSONResponse
 import tempfile
