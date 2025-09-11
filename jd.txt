@@ -1,0 +1,52 @@
+AI ENGINEER DUMMY JD​
+​
+Role Description:
+As an AI Engineer at Knowdis.ai, you will be an integral part of our AI development team, working on
+challenging projects that leverage the latest advancements in Natural Language Processing (NLP)
+and Reinforcement Learning. You will be responsible for designing, implementing, and optimizing AI
+models that drive our core products, focusing on product recommendation systems, marketplaces,
+and translation systems. This role offers the opportunity to work with a team of highly skilled
+professionals in a dynamic and collaborative environment.
+Key Responsibilities:
+●​ Develop and implement state-of-the-art AI models for product recommendation systems,
+marketplaces, and translation systems.
+●​ Design and optimize algorithms for Natural Language Processing (NLP) and Reinforcement
+Learning.
+●​ Collaborate with cross-functional teams to understand business requirements and translate
+them into technical solutions.
+●​ Conduct research to stay up-to-date with the latest advancements in AI and integrate
+relevant findings into ongoing projects.
+●​ Perform data preprocessing, feature engineering, and model evaluation to ensure high
+performance and accuracy of AI models.
+●​ Deploy and maintain AI models in production environments, ensuring scalability and
+reliability.
+●​ Participate in code reviews, provide constructive feedback, and ensure best practices in AI
+development are followed.
+●​ Document technical designs, experiments, and results for internal and external stakeholders.
+Qualifications and Experience:
+●​ Bachelor's degree in Computer Science or a related field from a Tier-1 Institute.
+●​ 2-5 years of hands-on experience in AI/ML development, with a focus on NLP or
+Reinforcement Learning.
+●​ Strong proficiency in programming languages such as Python, and experience with AI/ML
+frameworks and libraries (e.g., TensorFlow, PyTorch, Keras).
+●​ Proven experience in developing and deploying AI models in real-world applications,
+particularly in product recommendation systems, marketplaces, or translation systems.
+●​ Solid understanding of machine learning algorithms, data structures, and software
+engineering principles.
+●​ Experience with data pre-processing, feature extraction, and model evaluation techniques.
+●​ Ability to work collaboratively in a team environment and communicate effectively with
+technical and non-technical stakeholders.
+
+●​ Strong problem-solving skills, attention to detail, and a passion for innovation in AI
+technology
+Preferred Qualifications:
+●​ Master's degree in Computer Science or a related field.
+●​ Experience with cloud platforms (e.g., AWS, GCP, Azure) and scalable AI/ML infrastructure.
+Selection Process:
+●​ Interested Candidates are mandatorily required to apply through the listing on Jigya. Only
+applications received through this posting will be evaluated further.
+●​ Shortlisted candidates may be required to appear in an Online Assessment and Screening
+interview administered by Jigya
+●​ Candidates selected after the Jigya screening rounds will be interviewed by KnowDis
+
+

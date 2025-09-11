@@ -5,7 +5,7 @@ Code documented by Claude for readability
 '''
 
 
-import pypdf
+import pypdf, os
 import re
 from collections import defaultdict
 import json
@@ -136,17 +136,37 @@ class CleanATSScorer:
             'leveraged', 'utilized', 'deployed', 'integrated', 'migrated', 'scaled'
         ]
 
-    def extract_text_from_pdf(self, pdf_path: str) -> str:
-        """Extract text content from PDF file."""
-        try:
-            with open(pdf_path, 'rb') as file:
-                reader = pypdf.PdfReader(file)
-                text = ""
-                for page in reader.pages:
-                    text += page.extract_text()
-                return text.strip()
-        except Exception as e:
-            raise Exception(f"Error reading PDF: {str(e)}")
+    # def extract_text_from_file(self, pdf_path: str) -> str:
+    #     """Extract text content from PDF file."""
+    #     try:
+    #         with open(pdf_path, 'rb') as file:
+    #             reader = pypdf.PdfReader(file)
+    #             text = ""
+    #             for page in reader.pages:
+    #                 text += page.extract_text()
+    #             return text.strip()
+    #     except Exception as e:
+    #         raise Exception(f"Error reading PDF: {str(e)}")
+
+    def extract_text_from_file(self, file_path):
+        """
+        Extracts text from either PDF (.pdf) or plain text (.txt).
+        """
+        ext = os.path.splitext(file_path)[1].lower()
+
+        if ext == ".pdf":
+            with open(file_path, "rb") as f:
+                reader = pypdf.PdfReader(f)
+                text = "".join(page.extract_text() or "" for page in reader.pages)
+            return text
+
+        elif ext == ".txt":
+            with open(file_path, "r", encoding="utf-8") as f:
+                return f.read()
+
+        else:
+            raise ValueError(f"Unsupported file type: {ext}. Please provide .pdf or .txt")
+
 
     def _match_skill_in_text(self, skill: str, text: str) -> bool:
         """Improved skill matching that handles both single words and multi-word phrases."""
@@ -536,8 +556,8 @@ class CleanATSScorer:
         """Generate complete ATS report."""
 
         # Extract text from PDFs
-        resume_text = self.extract_text_from_pdf(resume_path)
-        jd_text = self.extract_text_from_pdf(jd_path)
+        resume_text = self.extract_text_from_file(resume_path)
+        jd_text = self.extract_text_from_file(jd_path)
 
         # Use the text-based report generation
         return self.generate_ats_report_from_text(resume_text, jd_text)
@@ -549,7 +569,7 @@ def main():
 
     try:
         # Generate report from PDF files
-        report = ats_scorer.generate_ats_report('/Users/arreyanhamid/Developer/ai-resume/rendercv_output/Garv_Khurana_CV.pdf', 'jd.pdf')
+        report = ats_scorer.generate_ats_report('/Volumes/Crucible/ATS/ATS/Garv.pdf', 'jd.txt')
         # report = ats_scorer.generate_ats_report('/Volumes/Crucible/ATS/ATS/Garv.pdf', 'jd.pdf')
 
 
