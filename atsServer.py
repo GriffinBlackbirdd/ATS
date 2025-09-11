@@ -86,39 +86,47 @@ async def analyze_resume(
 
 @app.post("/keywords")
 async def extract_keywords(
-    jd: UploadFile = File(..., description="Job Description PDF file")
+    jd: UploadFile = File(..., description="Job Description file (.pdf or .txt)")
 ) -> Dict[str, Any]:
     """
     Extract keywords from a job description.
 
     Args:
-        jd: PDF file of the job description
+        jd: Job Description file (.pdf or .txt)
 
     Returns:
         Dictionary containing extracted keywords (tech_skills, soft_skills, all_skills, total_count)
     """
 
+    def validate_file(filename: str, filetype: str):
+        if not (filename.lower().endswith('.pdf') or filename.lower().endswith('.txt')):
+            raise HTTPException(
+                status_code=400,
+                detail=f"{filetype} must be a PDF or TXT file"
+            )
+
     # Validate file type
-    if not jd.filename.lower().endswith('.pdf'):
-        raise HTTPException(status_code=400, detail="Job description must be a PDF file")
+    validate_file(jd.filename, "Job description")
 
     try:
-        # Create temporary file to save uploaded PDF
-        with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as jd_temp:
+        # Preserve extension for temp file
+        jd_ext = os.path.splitext(jd.filename)[1]
+
+        with tempfile.NamedTemporaryFile(delete=False, suffix=jd_ext) as jd_temp:
             jd_content = await jd.read()
             jd_temp.write(jd_content)
             jd_temp_path = jd_temp.name
 
-        # Extract text from JD PDF
-        jd_text = ats_scorer.extract_text_from_pdf(jd_temp_path)
+        # Extract text using extract_text_from_file (supports pdf + txt)
+        jd_text = ats_scorer.extract_text_from_file(jd_temp_path)
 
-        # Extract skills from JD
+        # Extract skills from JD text
         jd_skills = ats_scorer.extract_jd_skills(jd_text)
 
         # Clean up temporary file
         os.unlink(jd_temp_path)
 
-        # Format response similar to jd_keywords.json
+        # Format response
         jd_keywords = {
             "tech_skills": sorted(jd_skills['tech_skills']),
             "soft_skills": sorted(jd_skills['soft_skills']),
@@ -129,11 +137,12 @@ async def extract_keywords(
         return jd_keywords
 
     except Exception as e:
-        # Clean up temporary file in case of error
+        # Clean up temp file on error
         if 'jd_temp_path' in locals() and os.path.exists(jd_temp_path):
             os.unlink(jd_temp_path)
 
         raise HTTPException(status_code=500, detail=f"Error processing file: {str(e)}")
+
 
 @app.get("/")
 async def root():
