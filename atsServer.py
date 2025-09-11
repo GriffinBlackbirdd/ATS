@@ -24,57 +24,65 @@ ats_scorer = CleanATSScorer()
 
 @app.post("/analyze")
 async def analyze_resume(
-    resume: UploadFile = File(..., description="Resume PDF file"),
-    jd: UploadFile = File(..., description="Job Description PDF file")
+    resume: UploadFile = File(..., description="Resume file (.pdf or .txt)"),
+    jd: UploadFile = File(..., description="Job Description file (.pdf or .txt)")
 ) -> Dict[str, float]:
     """
     Analyze a resume against a job description and return the ATS score.
 
     Args:
-        resume: PDF file of the resume
-        jd: PDF file of the job description
+        resume: Resume file (.pdf or .txt)
+        jd: Job description file (.pdf or .txt)
 
     Returns:
         Dictionary containing the ATS score
     """
 
-    # Validate file types
-    if not resume.filename.lower().endswith('.pdf'):
-        raise HTTPException(status_code=400, detail="Resume must be a PDF file")
+    def validate_file(filename: str, filetype: str):
+        if not (filename.lower().endswith('.pdf') or filename.lower().endswith('.txt')):
+            raise HTTPException(
+                status_code=400,
+                detail=f"{filetype} must be a PDF or TXT file"
+            )
 
-    if not jd.filename.lower().endswith('.pdf'):
-        raise HTTPException(status_code=400, detail="Job description must be a PDF file")
+    # Validate file types
+    validate_file(resume.filename, "Resume")
+    validate_file(jd.filename, "Job description")
 
     try:
-        # Create temporary files to save uploaded PDFs
-        with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as resume_temp:
+        # Preserve correct file extensions for temp files
+        resume_ext = os.path.splitext(resume.filename)[1]
+        jd_ext = os.path.splitext(jd.filename)[1]
+
+        with tempfile.NamedTemporaryFile(delete=False, suffix=resume_ext) as resume_temp:
             resume_content = await resume.read()
             resume_temp.write(resume_content)
             resume_temp_path = resume_temp.name
 
-        with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as jd_temp:
+        with tempfile.NamedTemporaryFile(delete=False, suffix=jd_ext) as jd_temp:
             jd_content = await jd.read()
             jd_temp.write(jd_content)
             jd_temp_path = jd_temp.name
 
-        # Generate ATS report
+        # Generate ATS report using extract_text_from_file
         report = ats_scorer.generate_ats_report(resume_temp_path, jd_temp_path)
 
         # Clean up temporary files
         os.unlink(resume_temp_path)
         os.unlink(jd_temp_path)
 
-        # Return only the ATS score as requested
+        # Return only the ATS score
         return {"ats_score": report["ats_score"]}
 
     except Exception as e:
-        # Clean up temporary files in case of error
+        # Ensure cleanup in case of failure
         if 'resume_temp_path' in locals() and os.path.exists(resume_temp_path):
             os.unlink(resume_temp_path)
         if 'jd_temp_path' in locals() and os.path.exists(jd_temp_path):
             os.unlink(jd_temp_path)
 
         raise HTTPException(status_code=500, detail=f"Error processing files: {str(e)}")
+
 
 @app.post("/keywords")
 async def extract_keywords(
