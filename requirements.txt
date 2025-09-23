@@ -5,6 +5,13 @@ pypdf
 pandas
 numpy
 
+# ML/NLP dependencies
+sentence-transformers
+scikit-learn
+torch
+# CPU version of PyTorch (smaller download)
+# For GPU support, use: torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+
 # Testing dependencies
 pytest
 pytest-cov
