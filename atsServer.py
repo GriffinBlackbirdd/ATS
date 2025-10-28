@@ -27,27 +27,27 @@ app = FastAPI(
 ats_scorer = CleanATSScorer()
 # ml_ats_scorer = MLATSScorer()
 
-def keep_alive():
-    """
-    Background task to ping the service every 1 minute to keep it alive on Render.
-    """
-    def ping_service():
-        # Get the service URL from environment variable (Render auto-provides this)
-        service_url = os.getenv("RENDER_EXTERNAL_URL", "http://localhost:8008")
-        ping_url = f"{service_url}/ping"
+# def keep_alive():
+#     """
+#     Background task to ping the service every 1 minute to keep it alive on Render.
+#     """
+#     def ping_service():
+#         # Get the service URL from environment variable (Render auto-provides this)
+#         service_url = os.getenv("RENDER_EXTERNAL_URL", "http://localhost:8008")
+#         ping_url = f"{service_url}/ping"
 
-        while True:
-            try:
-                time.sleep(60)  # Wait 1 minute (60 seconds)
-                response = requests.get(ping_url, timeout=10)
-                print("PING PONG PING PONG")
-            except Exception as e:
-                print(f"Keep-alive ping failed: {e}")
+#         while True:
+#             try:
+#                 time.sleep(60)  # Wait 1 minute (60 seconds)
+#                 response = requests.get(ping_url, timeout=10)
+#                 print("PING PONG PING PONG")
+#             except Exception as e:
+#                 print(f"Keep-alive ping failed: {e}")
 
-    # Start the ping thread as a daemon thread
-    ping_thread = threading.Thread(target=ping_service, daemon=True)
-    ping_thread.start()
-    print("Keep-alive service started - pinging every 1 minute")
+#     # Start the ping thread as a daemon thread
+#     ping_thread = threading.Thread(target=ping_service, daemon=True)
+#     ping_thread.start()
+#     print("Keep-alive service started - pinging every 1 minute")
 
 @app.post("/analyze")
 async def analyze_resume(
