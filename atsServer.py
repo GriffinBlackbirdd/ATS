@@ -264,12 +264,12 @@ async def ping():
     """
     return {"status": "pong", "message": "Service is alive"}
 
-@app.on_event("startup")
-async def startup_event():
-    """
-    Initialize keep-alive service when the app starts.
-    """
-    keep_alive()
+# @app.on_event("startup")
+# async def startup_event():
+#     """
+#     Initialize keep-alive service when the app starts.
+#     """
+#     keep_alive()
 
 if __name__ == "__main__":
     import uvicorn
